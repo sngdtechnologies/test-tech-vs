@@ -11,7 +11,9 @@ use Log;
 
 class ProcessUserBatch implements ShouldQueue
 {
-    use Queueable;
+    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+
+    protected $users;
 
     /**
      * Create a new job instance.
