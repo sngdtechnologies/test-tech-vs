@@ -6,6 +6,7 @@ use Illuminate\Console\Command;
 use App\Models\User;
 use App\Jobs\ProcessGroupUserBatch;
 use App\Jobs\ProcessUserBatch;
+use Log;
 
 class ScheduleUserUpdates extends Command
 {
@@ -54,20 +55,25 @@ class ScheduleUserUpdates extends Command
 
         // Group users into batches of 1000 and recovery of recordings for invidivual requests
         $userIndividualRequest = [];
-        foreach ($users->chunk($this->numberPayloadGroup) as $key => $userBatch) 
+        foreach ($users->chunk(self::$numberPayloadGroup) as $key => $userBatch) 
         {
-            if ($key < $this->numberRequestGroupPerHour) { // check that request batch number has not been exceeded 
+            if ($key < self::$numberRequestGroupPerHour) { // check that request batch number has not been exceeded 
                 ProcessGroupUserBatch::dispatch($userBatch->toArray()); // dispatch a job for each batch
-            } elseif (count($userIndividualRequest) < $this->numberIndividualRequest) { // checks if the number of records for individual requests has not been reached
+            } elseif (count($userIndividualRequest) < self::$numberIndividualRequest) { // checks if the number of records for individual requests has not been reached
                 $userIndividualRequest = [...$userIndividualRequest, ...$userBatch->toArray()]; // recovery of recordings for invidivual requests 
             }
         }
         
+        // dispatch a job for individual update batch
         foreach ($userIndividualRequest as $item) 
         {
-            // dispatch a job for individual update batch
             ProcessUserBatch::dispatch($item);   
         }
+
+        // change value attributes_changed to false
+        $users->each(function ($e) {
+            $e->update(['attributes_changed' => false]);
+        });
 
         $this->info('User update jobs have been scheduled.');
         return 0;

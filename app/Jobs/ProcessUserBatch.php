@@ -30,6 +30,6 @@ class ProcessUserBatch implements ShouldQueue
     public function handle(): void
     {
         // Simulation of API call to supplier
-        Log::info("[$this->user->id] firstname: {$this->user->name}, timezone: '{$this->user->timezone}'");
+        Log::info("[{$this->user['id']}] firstname: {$this->user['name']}, timezone: '{$this->user['timezone']}'");
     }
 }

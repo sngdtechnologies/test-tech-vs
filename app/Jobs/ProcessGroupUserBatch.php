@@ -29,9 +29,9 @@ class ProcessGroupUserBatch implements ShouldQueue
      */
     public function handle(): void
     {
-        foreach ($this->users as $user) {
+        foreach ($this->users as $item) {
             // Simulation of API call to supplier
-            Log::info("[$user->id] firstname: {$user->name}, timezone: '{$user->timezone}'");
+            Log::info("[{$item['id']}] firstname: {$item['name']}, timezone: '{$item['timezone']}'");
         }
     }
 }

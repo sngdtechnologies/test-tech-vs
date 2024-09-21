@@ -32,6 +32,7 @@ class UpdateUsers extends Command
             $user->update([
                 'name'      => fake()->name(),
                 'timezone'  => $timezones[array_rand($timezones)],
+                'attributes_changed' => true
             ]);
         });
         $this->info('Users have been updated successfully!');
