@@ -9,19 +9,19 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Log;
 
-class ProcessUserBatch implements ShouldQueue
+class ProcessGroupUserBatch implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    protected $user;
+    protected $users;
 
     /**
      * Create a new job instance.
      * @Param $users
      */
-    public function __construct($user)
+    public function __construct($users)
     {
-        $this->user = $user;
+        $this->users = $users;
     }
 
     /**
@@ -29,7 +29,9 @@ class ProcessUserBatch implements ShouldQueue
      */
     public function handle(): void
     {
-        // Simulation of API call to supplier
-        Log::info("[$this->user->id] firstname: {$this->user->name}, timezone: '{$this->user->timezone}'");
+        foreach ($this->users as $user) {
+            // Simulation of API call to supplier
+            Log::info("[$user->id] firstname: {$user->name}, timezone: '{$user->timezone}'");
+        }
     }
 }
