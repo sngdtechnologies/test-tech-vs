@@ -18,7 +18,7 @@ class ProcessGroupUserBatch implements ShouldQueue
 
     // Maximum number of attempts before marking job as failed
     public $tries = 3;
-    
+
     /**
      * Create a new job instance.
      * @Param $users
@@ -26,6 +26,11 @@ class ProcessGroupUserBatch implements ShouldQueue
     public function __construct($users)
     {
         $this->users = $users;
+    }
+
+    public function backoff()
+    {
+        return [60, 120, 300]; // 1st attempt after 60s, 2nd after 120s, 3rd after 300s
     }
 
     /**
@@ -42,5 +47,11 @@ class ProcessGroupUserBatch implements ShouldQueue
             // In the event of an error, the job will restart automatically.
             throw $e;
         }
+    }
+
+    public function failed(Exception $exception)
+    {
+        // Log error
+        Log::error("Failed to process user batch: " . $exception->getMessage());
     }
 }

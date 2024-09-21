@@ -28,6 +28,11 @@ class ProcessUserBatch implements ShouldQueue
         $this->user = $user;
     }
 
+    public function backoff()
+    {
+        return [60, 120, 300]; // 1st attempt after 60s, 2nd after 120s, 3rd after 300s
+    }
+
     /**
      * Execute the job.
      */
@@ -40,5 +45,11 @@ class ProcessUserBatch implements ShouldQueue
             // In the event of an error, the job will restart automatically.
             throw $e;
         }
+    }
+
+    public function failed(Exception $exception)
+    {
+        // Log error
+        Log::error("Failed to process user batch: " . $exception->getMessage());
     }
 }
