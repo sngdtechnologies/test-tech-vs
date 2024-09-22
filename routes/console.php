@@ -9,4 +9,4 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote')->hourly();
 
 // Executes users:schedule-updates command every 30 minutes
-Schedule::command('users:schedule-updates')->everyTwoMinutes();
+Schedule::command('users:schedule-updates')->everyThirtyMinutes();

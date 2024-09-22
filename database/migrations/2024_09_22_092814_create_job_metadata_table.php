@@ -11,8 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->boolean('attributes_changed')->default(false);
+        Schema::create('job_metadata', function (Blueprint $table) {
+            $table->id();
+            $table->string("job_name");
+            $table->integer("number_execution")->default(0);
+            $table->timestamp("last_completed_at")->nullable();
+            $table->timestamps();
         });
     }
 
@@ -21,8 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn('attributes_changed');
-        });
+        Schema::dropIfExists('job_metadata');
     }
 };
