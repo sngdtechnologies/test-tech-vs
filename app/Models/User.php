@@ -20,7 +20,8 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        "timezone"
+        "timezone",
+        "needs_update"
     ];
 
     /**
