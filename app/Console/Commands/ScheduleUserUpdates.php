@@ -137,10 +137,17 @@ class ScheduleUserUpdates extends Command
         // Initialise data Command
         $this->initialise();
 
+        // Prioritize users marked as “needs_update"
+        $usersToUpdate = User::where('needs_update', true)->get();
+
         // Retrieve users whose “updated_at” is later than this date
-        $users = User::where("updated_at", '>', $this->lastJobGroupUserCompletedAt)
+        $newUsers = User::where('needs_update', false)
+        ->where("updated_at", '>', $this->lastJobGroupUserCompletedAt)
         ->orWhere("updated_at", '>', $this->lastJobUserCompletedAt)
         ->get();
+
+        // Merge users marked as “needs_update” with new users
+        $users = $usersToUpdate->merge($newUsers);
 
         // Group users into batches of 1000 and recovery of recordings for invidivual requests
         $userIndividualRequest = [];
@@ -157,14 +164,21 @@ class ScheduleUserUpdates extends Command
                     "number_execution" => $this->jobMetadataGroupUserBatch->number_execution + 1,
                     "last_completed_at" => Carbon::now()
                 ]); 
+                // Mark all users as updated
+                $userBatch->each(function ($e) {
+                    $e->update(['needs_update' => false]);
+                });
+                // decrement number of individual requests remaining
                 $numberRBR--;
             } else {
-                $temp = [...$userIndividualRequest, ...$userBatch->toArray()]; // recovery of recordings for invidivual requests 
-                foreach ($temp as $item) {
+                foreach ($userBatch as $item) {
                     // checks if the number of individual requests remaining has not been greater than 0
                     if ($numberIRR > 0) {
                         array_push($userIndividualRequest, $item);
                         $numberIRR--;
+                    } else {
+                        // Mark users who have not been updated
+                        User::find($item['id'])->update(['needs_update' => true]);
                     }
                 }
             }
@@ -173,7 +187,9 @@ class ScheduleUserUpdates extends Command
         // dispatch a job for individual update batch
         foreach ($userIndividualRequest as $item) 
         {
-            ProcessUserBatch::dispatch($item);   
+            ProcessUserBatch::dispatch($item); 
+            // update needs_update to false
+            User::find($item['id'])->update(['needs_update' => false]);
         }
 
         // Update job execution date
@@ -183,11 +199,6 @@ class ScheduleUserUpdates extends Command
                 "last_completed_at" => Carbon::now()
             ]); 
         }
-
-        // change value attributes_changed to false
-        $users->each(function ($e) {
-            $e->update(['attributes_changed' => false]);
-        });
 
         $this->info('User update jobs have been scheduled.');
         return 0;
