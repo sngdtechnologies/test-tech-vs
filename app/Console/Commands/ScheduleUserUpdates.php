@@ -57,7 +57,7 @@ class ScheduleUserUpdates extends Command
         $userIndividualRequest = [];
         foreach ($users->chunk(self::$numberPayloadGroup) as $key => $userBatch) 
         {
-            if ($key < self::$numberRequestGroupPerHour) { // check that request batch number has not been exceeded 
+            if ($key < self::$numberRequestGroupPerHour && $userBatch->count() >= self::$numberPayloadGroup) { // check that request batch number has not been exceeded 
                 ProcessGroupUserBatch::dispatch($userBatch->toArray()); // dispatch a job for each batch
             } elseif (count($userIndividualRequest) < self::$numberIndividualRequest) { // checks if the number of records for individual requests has not been reached
                 $userIndividualRequest = [...$userIndividualRequest, ...$userBatch->toArray()]; // recovery of recordings for invidivual requests 
