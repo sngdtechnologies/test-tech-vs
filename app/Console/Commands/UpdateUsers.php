@@ -31,7 +31,7 @@ class UpdateUsers extends Command
         User::all()->each(function ($user) use ($timezones) {
             $user->update([
                 'name'      => fake()->name(),
-                'timezone'  => $timezones[array_rand($timezones)],
+                'timezone'  => $timezones[array_rand($timezones)]
             ]);
         });
         $this->info('Users have been updated successfully!');
